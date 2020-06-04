@@ -1,8 +1,9 @@
 import React from 'react';
-import {Text, TouchableOpacity, View} from "react-native";
+import {Text, TouchableOpacity, View, StyleSheet} from "react-native";
 import { Feather as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import MapView from "react-native-maps";
+import {Constants} from "expo-constants";
 
 const Points = () => {
     const navigation = useNavigation();
