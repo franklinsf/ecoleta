@@ -6,18 +6,16 @@ import { Roboto_400Regular, Roboto_500Medium} from '@expo-google-fonts/roboto';
 import { Ubuntu_700Bold, useFonts} from '@expo-google-fonts/ubuntu';
 
 import { RectButton } from 'react-native-gesture-handler';
+import { useNavigation } from '@react-navigation/native';
 
 const Home: React.FC = () => {
-  const [fontsLoaded] = useFonts({
-    Roboto_400Regular,
-    Roboto_500Medium,
-    Ubuntu_700Bold
-  });
+  const navigation = useNavigation();
 
-  if(!fontsLoaded) {
-    return <AppLoading />
+  function handleNavigationToPoints() {
+    navigation.navigate('Points');
   }
-
+  
+  
   return (
     <ImageBackground 
       source={require('../../assets/home-background.png')} 
@@ -31,7 +29,7 @@ const Home: React.FC = () => {
       </View>
       
       <View style={styles.footer}>
-        <RectButton style={styles.button} onPress={() => {}}>
+        <RectButton style={styles.button} onPress={handleNavigationToPoints}>
           <View style={styles.buttonIcon}>
             <Text>
               <Icon name="arrow-right" color="#FFF" size={24} />
@@ -49,8 +47,7 @@ const Home: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 32,
-    backgroundColor: '#F0F0F5'
+    padding: 32
   },
 
   main: {
