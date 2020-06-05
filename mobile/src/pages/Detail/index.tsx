@@ -20,7 +20,7 @@ interface Data {
         uf: string;
     },
     items: {
-        title: string;
+        titulo: string;
     }[];
 }
 
