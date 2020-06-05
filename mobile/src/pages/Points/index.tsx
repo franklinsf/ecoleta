@@ -1,22 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import {Text, TouchableOpacity, View, StyleSheet, ScrollView, Image} from "react-native";
+import {Text, TouchableOpacity, View, StyleSheet, ScrollView, Image, Alert} from "react-native";
 import { Feather as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import MapView, { Marker } from "react-native-maps";
 import Constants from "expo-constants";
 import { SvgUri } from "react-native-svg";
+import * as Location from "expo-location";
 import api from "../../services/api";
+import {LocationData} from "expo-location";
 
 interface Item {
     id: number,
     titulo: string,
-    image_url: string
+    imagem_url: string
+}
+
+interface Point {
+    id: number;
+    nome: string;
+    imagem: string;
+    latitude: number;
+    longitude: number;
 }
 
 const Points = () => {
     const [items, setItems] = useState<Item[]>([]);
+    const [points, setPoints] = useState<Point[]>([]);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
+
+    const [initialPosition, setInitialPosition] = useState<[number, number]>([0, 0]);
+
     const navigation = useNavigation();
+
+    useEffect(() => {
+        async function loadPosition() {
+            const { status } = await Location.requestPermissionsAsync();
+
+            if(status !== 'granted') {
+                Alert.alert('Oooops...','Precisamos de sua permissão para obter a localização.');
+                return;
+            }
+
+            //FIXME: Do jeito abaixo não traz o location correto. Sem os parâmetros está dando erro no emulador.
+            // const location = await Location.getCurrentPositionAsync({accuracy:Location.Accuracy.Low});
+            // const location = await Location.getCurrentPositionAsync();
+            const location = {
+              coords: {
+                  latitude: -22.9120894,
+                  longitude: -43.3584274
+              }
+            };
+
+            const  { latitude, longitude } = location.coords;
+
+            setInitialPosition([
+                latitude,
+                longitude
+            ])
+        }
+
+        loadPosition();
+    },[]);
 
     useEffect(() => {
         api.get(`items`).then(response => {
@@ -24,12 +68,24 @@ const Points = () => {
         });
     },[]);
 
+    useEffect(() => {
+        api.get('points', {
+            params: {
+                cidade: 'Rio de Janeiro',
+                uf: 'RJ',
+                items: [13,14,15]
+            }
+        }).then(response => {
+            setPoints(response.data);
+        });
+    }, []);
+
     function handleNavigateBack() {
         navigation.goBack();
     }
 
-    function handleNavigateToDetail() {
-        navigation.navigate('Detail');
+    function handleNavigateToDetail(id: number) {
+        navigation.navigate('Detail', { point_id: id});
     }
 
     function handleSelectItem(id: number) {
@@ -55,26 +111,30 @@ const Points = () => {
                 <Text style={styles.description}>Encontre no mapa um ponto de coleta.</Text>
 
                 <View style={styles.mapContainer}>
-                    <MapView
-                        style={styles.map}
-                        initialRegion={{
-                            latitude: -22.9120894,
-                            longitude: -43.3584274,
-                            latitudeDelta: 0.014,
-                            longitudeDelta: 0.014
-                        }}
-                    >
-                        <Marker coordinate={{
-                            latitude: -22.9120894,
-                            longitude: -43.3584274,
-                        }} onPress={handleNavigateToDetail}
+                    {initialPosition[0] !== 0 && (
+                        <MapView
+                            style={styles.map}
+                            initialRegion={{
+                                latitude: initialPosition[0],
+                                longitude: initialPosition[1],
+                                latitudeDelta: 0.014,
+                                longitudeDelta: 0.014
+                            }}
                         >
-                            <View style={styles.mapMarkerContainer}>
-                                <Image style={styles.mapMarkerImage} source={{ uri: 'https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=640&q=60'}} />
-                                <Text style={styles.mapMarkerTitle}>Mercado</Text>
-                            </View>
-                        </Marker>
-                    </MapView>
+                            {points.map(point => (
+                                <Marker key={point.id} coordinate={{
+                                    latitude: point.latitude,
+                                    longitude: point.longitude,
+                                }} onPress={() => handleNavigateToDetail(point.id)}
+                                >
+                                    <View style={styles.mapMarkerContainer}>
+                                        <Image style={styles.mapMarkerImage} source={{ uri: point.imagem}} />
+                                        <Text style={styles.mapMarkerTitle}>{point.nome}</Text>
+                                    </View>
+                                </Marker>
+                            ))}
+                        </MapView>
+                    )}
                 </View>
             </View>
 
@@ -94,7 +154,7 @@ const Points = () => {
                             onPress={() => handleSelectItem(item.id)}
                             activeOpacity={0.6}
                         >
-                            <SvgUri uri={item.image_url} width={42} height={42} />
+                            <SvgUri uri={item.imagem_url} width={42} height={42} />
                             <Text style={styles.itemTitle}>{item.titulo}</Text>
                         </TouchableOpacity>
                     ))}
