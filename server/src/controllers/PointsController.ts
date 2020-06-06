@@ -59,7 +59,7 @@ class PointsController {
       uf,
       items
     } = request.body;
-  
+    debugger;
     const trx = await knex.transaction();
     console.log('File: ', request.file);
     const point = {

@@ -144,7 +144,7 @@ const CreatePoint: React.FC = () => {
     data.append('items', items.join(','));
 
     if(selectedFile) {
-      data.append('image', selectedFile);
+      data.append('imagem', selectedFile);
     }
 
     api.post('points', data);
