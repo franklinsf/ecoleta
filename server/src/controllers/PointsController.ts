@@ -61,7 +61,7 @@ class PointsController {
     } = request.body;
   
     const trx = await knex.transaction();
-
+    console.log('File: ', request.file);
     const point = {
       imagem: request.file.filename,
       nome,

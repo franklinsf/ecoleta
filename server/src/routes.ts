@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from "multer";
-import multerConfig from "../config/multer";
+import multerConfig from "./config/multer";
 
 import PointsController from './controllers/PointsController';
 import ItemsController from './controllers/ItemsController';

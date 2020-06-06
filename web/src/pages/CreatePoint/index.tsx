@@ -9,6 +9,7 @@ import axios from 'axios';
 
 import './styles.css';
 import logo from '../../assets/logo.svg';
+import Dropzone from "../../components/Dropzone";
 
 
 interface Item {
@@ -45,8 +46,8 @@ const CreatePoint: React.FC = () => {
   const [selectedUf, setSelectedUf] = useState('0');
   const [selectedCity, setSelectedCity] = useState('0');
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  
   const [selectedPosition, setSelectedPosition] = useState<[number, number]>([0, 0]);
+  const [selectedFile, setSelectedFile] = useState<File>();
 
   const history = useHistory();
 
@@ -132,15 +133,18 @@ const CreatePoint: React.FC = () => {
     const [latitude, longitude] = selectedPosition;
     const items = selectedItems;
 
-    const data = {
-      nome,
-      email,
-      whatsapp,
-      uf,
-      cidade,
-      latitude,
-      longitude,
-      items
+    const data = new FormData();
+    data.append('nome', nome);
+    data.append('email', email);
+    data.append('whatsapp', whatsapp);
+    data.append('uf', uf);
+    data.append('cidade', cidade);
+    data.append('latitude', String(latitude));
+    data.append('longitude', String(longitude));
+    data.append('items', items.join(','));
+
+    if(selectedFile) {
+      data.append('image', selectedFile);
     }
 
     api.post('points', data);
@@ -163,6 +167,8 @@ const CreatePoint: React.FC = () => {
 
       <form onSubmit={handleSubmit}>
         <h1>Cadastro do <br/> ponto de coleta</h1>
+
+        <Dropzone onFileUploaded={setSelectedFile} />
 
         <fieldset>
           <legend>
@@ -221,7 +227,7 @@ const CreatePoint: React.FC = () => {
               <select name="uf" id="uf" value={selectedUf} onChange={handleSelectUf}>
                 <option value="0">Selecione uma UF</option>
                 {ufs.map(uf => (
-                  <option value={uf}>{uf}</option>
+                  <option key={uf} value={uf}>{uf}</option>
                 ))}
               </select>
             </div>
@@ -230,7 +236,7 @@ const CreatePoint: React.FC = () => {
               <select name="cidade" id="cidade" value={selectedCity} onChange={handleSelectCity}>
                 <option value="0">Selecione uma cidade</option>
                 {cities.map(city => (
-                  <option value={city}>{city}</option>
+                  <option key={city} value={city}>{city}</option>
                 ))}
               </select>
             </div>
